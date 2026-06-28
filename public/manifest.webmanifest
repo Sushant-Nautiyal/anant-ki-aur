@@ -1,0 +1,19 @@
+{
+  "name": "Anant Ki Aur",
+  "short_name": "Anant",
+  "description": "Daily Satsang Wisdom",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff8ee",
+  "theme_color": "#f4a340",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
