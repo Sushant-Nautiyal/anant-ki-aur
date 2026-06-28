@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
+    "deploy": "gh-pages -d dist",
     "preview": "vite preview",
     "parse:whatsapp": "node scripts/parse-whatsapp.js"
   },
   "devDependencies": {
+    "gh-pages": "^6.3.0",
     "vite": "latest"
   }
 }

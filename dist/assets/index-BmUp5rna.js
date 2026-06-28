@@ -8,9 +8,9 @@
           <div class="om-mark" aria-hidden="true">ॐ</div>
             <div class="brand-copy">
             <h1>अनन्त की ओर</h1>
-            <p class="subtitle">गुरु अनुग्रह की उच्छेष्टि प्रसादी</p>
-            <p class="guru-name">परम पूज्य</p>
-            <p class="guru-title">स्वामी अवधेशानंद गिरि जी महाराज</p>
+            <p class="subtitle">गुरु अनुग्रह</p>
+            <p class="guru-title">परम पूज्य स्वामी अवधेशानंद गिरि जी महाराज</p>
+            <p class="subtitle">प्रातः कालीन उच्छेष्टि प्रसादी</p>
             </div>
         </header>
 
