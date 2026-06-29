@@ -188,14 +188,18 @@ button {
   letter-spacing: 0.02em;
 }
 
+
 .message-text {
   margin: 0;
   align-self: center;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.48rem, 7vw, 2.15rem);
-  line-height: 1.22;
+  font-family: "Noto Serif Devanagari", "Kohinoor Devanagari", Georgia, serif;
+  line-height: 1.16;
+  font-weight: 600;
   letter-spacing: -0.025em;
   text-wrap: balance;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
 }
 
 .message-actions {
@@ -461,10 +465,6 @@ footer {
     padding: 16px;
   }
 
-  .message-text {
-    font-size: 1.34rem;
-  }
-
   .pill-button {
     min-height: 34px;
     padding-inline: 11px;
@@ -488,4 +488,30 @@ footer {
   .phone-frame {
     min-height: min(860px, calc(100dvh - 56px));
   }
+}
+.divider {
+  position: relative;
+  width: 80%;
+  height: 1px;
+  margin: 10px auto;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(166, 81, 19, 0.35),
+    transparent
+  );
+}
+
+/* diamond in center */
+.divider::after {
+  content: "";
+  position: absolute;
+  opacity: 0.8;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: rgba(166, 81, 19, 0.7);
+  transform: translate(-50%, -50%) rotate(45deg);
+  border-radius: 1px;
 }
