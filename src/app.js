@@ -49,9 +49,11 @@ function template() {
           <div class="om-mark" aria-hidden="true">ॐ</div>
             <div class="brand-copy">
             <h1>अनन्त की ओर</h1>
-            <p class="subtitle">गुरु अनुग्रह</p>
+            <div class="divider"></div>
             <p class="guru-title">परम पूज्य स्वामी अवधेशानंद गिरि जी महाराज</p>
+            <p class="subtitle">के सानिध्य में प्राप्त अनुग्रह आशीष</p>
             <p class="subtitle">प्रातः कालीन उच्छेष्टि प्रसादी</p>
+            <div class="divider"></div>
             </div>
         </header>
 
@@ -209,6 +211,7 @@ function render(els, state, animate = false) {
 
   els.dateLine.textContent = DAY_FORMATTER.format(state.selectedDate);
   els.messageText.textContent = state.isLoading ? "" : message;
+  applyMessageSize(els.messageText, message);
   els.monthTitle.textContent = MONTH_FORMATTER.format(state.displayDate);
   els.yearInput.value = state.selectedDate.getFullYear();
 
@@ -225,7 +228,26 @@ function render(els, state, animate = false) {
     window.setTimeout(() => els.root.classList.remove("is-animating"), 180);
   }
 }
+function applyMessageSize(messageElement, message) {
+  const length = message.trim().length;
 
+  messageElement.classList.remove(
+    "message-short",
+    "message-medium",
+    "message-long",
+    "message-very-long"
+  );
+
+  if (length <= 120) {
+    messageElement.classList.add("message-short");
+  } else if (length <= 220) {
+    messageElement.classList.add("message-medium");
+  } else if (length <= 340) {
+    messageElement.classList.add("message-long");
+  } else {
+    messageElement.classList.add("message-very-long");
+  }
+}
 function renderWeekdays(els) {
   if (els.weekdayRow.children.length) return;
   els.weekdayRow.innerHTML = WEEKDAYS.map((day) => `<span>${day}</span>`).join("");
