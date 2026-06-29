@@ -1,4 +1,4 @@
-const CACHE_NAME = "anant-ki-aur-v5";
+const CACHE_NAME = "anant-ki-aur-v6";
 
 const APP_SHELL = [
   "./",
