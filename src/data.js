@@ -3,7 +3,7 @@ const LOCAL_JSON_URL = "./data/messages.json";
 // Future Google Sheet support:
 // 1. Publish the sheet to web as CSV.
 // 2. Paste the published CSV URL below.
-// 3. Expected columns: date,message
+// 3. Expected columns: date,message,hindiMessage 
 // 4. Keep it empty to use only local JSON.
 const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS11BNTNc_RzdXUDLU_PZlSO5vf-2Acgct3N8bUVZJIsr08acmAldID_JgrR8x8nSlroFwwLJ6WQJo7/pub?output=csv";
 
@@ -67,15 +67,20 @@ function parseCsvMessages(csv) {
   const headers = rows[0].map((header) => header.trim().toLowerCase());
   const dateIndex = headers.indexOf("date");
   const messageIndex = headers.indexOf("message");
+  const hindiMessageIndex =
+  headers.indexOf("hindimessage") !== -1
+    ? headers.indexOf("hindimessage")
+    : headers.indexOf("hindi_message");
 
   if (dateIndex === -1 || messageIndex === -1) {
     throw new Error("Google Sheet CSV must contain date and message columns");
   }
 
   return rows.slice(1).map((row) => ({
-    date: row[dateIndex],
-    message: row[messageIndex]
-  }));
+  date: row[dateIndex],
+  message: row[messageIndex],
+  hindiMessage: hindiMessageIndex !== -1 ? row[hindiMessageIndex] : ""
+}));
 }
 
 function parseCsv(csv) {
@@ -116,13 +121,23 @@ function normalizeMessages(messages) {
   const map = new Map();
 
   for (const item of messages) {
-    if (!item || typeof item.message !== "string") continue;
+    if (!item) continue;
 
     const date = normalizeDate(item.date);
-    const message = item.message.trim();
+    const message = typeof item.message === "string" ? item.message.trim() : "";
+    const hindiMessage =
+      typeof item.hindiMessage === "string"
+        ? item.hindiMessage.trim()
+        : typeof item.hindi_message === "string"
+          ? item.hindi_message.trim()
+          : "";
 
     if (!date || !message) continue;
-    map.set(date, message);
+
+    map.set(date, {
+      message,
+      hindiMessage
+    });
   }
 
   return map;
