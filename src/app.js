@@ -228,7 +228,16 @@ function changeDate(els, state, date) {
 
 function render(els, state, animate = false) {
     const key = toDateKey(state.selectedDate);
-    const message = state.messages.get(key) || EMPTY_MESSAGE;
+    const messageEntry = state.messages.get(key);
+
+    const hasMessage = Boolean(messageEntry?.message);
+    const hasHindiMessage = Boolean(messageEntry?.hindiMessage);
+
+    const message = hasMessage ?
+        state.isHindiVisible && hasHindiMessage ?
+        messageEntry.hindiMessage :
+        messageEntry.message :
+        EMPTY_MESSAGE;
     els.messageText.textContent = state.isLoading ? "" : message;
 
     els.hindiToggleButton.hidden = !hasHindiMessage || state.isLoading;
