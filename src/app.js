@@ -1,47 +1,50 @@
 import {
-  WEEKDAYS,
-  MONTH_FORMATTER,
-  DAY_FORMATTER,
-  addMonths,
-  addYears,
-  buildMonthGrid,
-  clampDate,
-  todayDate,
-  toDateKey
+    WEEKDAYS,
+    MONTH_FORMATTER,
+    DAY_FORMATTER,
+    addMonths,
+    addYears,
+    buildMonthGrid,
+    clampDate,
+    todayDate,
+    toDateKey
 } from "./calendar.js";
-import { loadDailyMessages } from "./data.js";
+import {
+    loadDailyMessages
+} from "./data.js";
 
 const EMPTY_MESSAGE = "No wisdom message available for this date.";
 
 export function createApp(root) {
-  const state = {
-    selectedDate: todayDate(),
-    displayDate: todayDate(),
-    messages: new Map(),
-    favorites: loadFavorites(),
-    isLoading: true,
-    isDark: localStorage.getItem("aka-theme") === "dark"
-  };
+    const state = {
+        selectedDate: todayDate(),
+        displayDate: todayDate(),
+        messages: new Map(),
+        favorites: loadFavorites(),
+        isLoading: true,
+        isDark: localStorage.getItem("aka-theme") === "dark",
+        isHindiVisible: false
+    };
 
-  root.innerHTML = template();
-  const els = bindElements(root);
-  applyTheme(state.isDark);
-  attachEvents(els, state);
-  render(els, state);
+    root.innerHTML = template();
+    const els = bindElements(root);
+    applyTheme(state.isDark);
+    attachEvents(els, state);
+    render(els, state);
 
-  loadDailyMessages()
-    .then((messages) => {
-      state.messages = messages;
-    })
-    .catch(() => showToast(els, "Could not load messages. Showing empty state."))
-    .finally(() => {
-      state.isLoading = false;
-      render(els, state);
-    });
+    loadDailyMessages()
+        .then((messages) => {
+            state.messages = messages;
+        })
+        .catch(() => showToast(els, "Could not load messages. Showing empty state."))
+        .finally(() => {
+            state.isLoading = false;
+            render(els, state);
+        });
 }
 
 function template() {
-  return `
+    return `
     <main class="app-shell" aria-label="Anant Ki Aur daily satsang wisdom">
       <section class="phone-frame">
         <header class="hero">
@@ -58,8 +61,20 @@ function template() {
         </header>
 
         <section class="message-card" aria-live="polite">
-          <div class="date-line skeleton-target"></div>
-          <blockquote class="message-text skeleton-target"></blockquote>
+          <div class="message-card-header">
+  <div class="date-line skeleton-target"></div>
+
+  <button
+    class="translate-button hindi-toggle-button"
+    type="button"
+    hidden
+    aria-pressed="false"
+  >
+    文A&nbsp;&nbsp;हिंदी
+  </button>
+</div>
+
+<blockquote class="message-text skeleton-target"></blockquote>
           <div class="message-actions" aria-label="Message actions">
             <button class="pill-button today-button" type="button">Today</button>
             <button class="pill-button random-button" type="button">Random</button>
@@ -95,180 +110,201 @@ function template() {
 }
 
 function bindElements(root) {
-  return {
-    root,
-    dateLine: root.querySelector(".date-line"),
-    messageText: root.querySelector(".message-text"),
-    calendarGrid: root.querySelector(".calendar-grid"),
-    weekdayRow: root.querySelector(".weekday-row"),
-    monthTitle: root.querySelector(".month-title"),
-    yearInput: root.querySelector(".year-input"),
-    prevMonth: root.querySelector(".prev-month"),
-    nextMonth: root.querySelector(".next-month"),
-    prevYear: root.querySelector(".prev-year"),
-    nextYear: root.querySelector(".next-year"),
-    todayButton: root.querySelector(".today-button"),
-    randomButton: root.querySelector(".random-button"),
-    favoriteButton: root.querySelector(".favorite-button"),
-    copyButton: root.querySelector(".copy-button"),
-    shareButton: root.querySelector(".share-button"),
-    themeToggle: root.querySelector(".theme-toggle"),
-    toast: root.querySelector(".toast")
-  };
+    return {
+        root,
+        dateLine: root.querySelector(".date-line"),
+        messageText: root.querySelector(".message-text"),
+        hindiToggleButton: root.querySelector(".hindi-toggle-button"),
+        calendarGrid: root.querySelector(".calendar-grid"),
+        weekdayRow: root.querySelector(".weekday-row"),
+        monthTitle: root.querySelector(".month-title"),
+        yearInput: root.querySelector(".year-input"),
+        prevMonth: root.querySelector(".prev-month"),
+        nextMonth: root.querySelector(".next-month"),
+        prevYear: root.querySelector(".prev-year"),
+        nextYear: root.querySelector(".next-year"),
+        todayButton: root.querySelector(".today-button"),
+        randomButton: root.querySelector(".random-button"),
+        favoriteButton: root.querySelector(".favorite-button"),
+        copyButton: root.querySelector(".copy-button"),
+        shareButton: root.querySelector(".share-button"),
+        themeToggle: root.querySelector(".theme-toggle"),
+        toast: root.querySelector(".toast")
+    };
 }
 
 function attachEvents(els, state) {
-  els.prevMonth.addEventListener("click", () => changeDate(els, state, addMonths(state.selectedDate, -1)));
-  els.nextMonth.addEventListener("click", () => changeDate(els, state, addMonths(state.selectedDate, 1)));
-  els.prevYear.addEventListener("click", () => changeDate(els, state, addYears(state.selectedDate, -1)));
-  els.nextYear.addEventListener("click", () => changeDate(els, state, addYears(state.selectedDate, 1)));
+    els.prevMonth.addEventListener("click", () => changeDate(els, state, addMonths(state.selectedDate, -1)));
+    els.nextMonth.addEventListener("click", () => changeDate(els, state, addMonths(state.selectedDate, 1)));
+    els.prevYear.addEventListener("click", () => changeDate(els, state, addYears(state.selectedDate, -1)));
+    els.nextYear.addEventListener("click", () => changeDate(els, state, addYears(state.selectedDate, 1)));
+    els.hindiToggleButton.addEventListener("click", () => {
+        state.isHindiVisible = !state.isHindiVisible;
+        render(els, state, true);
+    });
 
-  els.todayButton.addEventListener("click", () => changeDate(els, state, todayDate()));
+    els.todayButton.addEventListener("click", () => changeDate(els, state, todayDate()));
 
-  els.yearInput.addEventListener("change", () => {
-    const year = Number(els.yearInput.value);
+    els.yearInput.addEventListener("change", () => {
+        const year = Number(els.yearInput.value);
 
-    if (!Number.isInteger(year) || year < 1900 || year > 2200) {
-      showToast(els, "Please enter a year between 1900 and 2200.");
-      els.yearInput.value = state.selectedDate.getFullYear();
-      return;
-    }
+        if (!Number.isInteger(year) || year < 1900 || year > 2200) {
+            showToast(els, "Please enter a year between 1900 and 2200.");
+            els.yearInput.value = state.selectedDate.getFullYear();
+            return;
+        }
 
-    changeDate(els, state, clampDate(year, state.selectedDate.getMonth(), state.selectedDate.getDate()));
-  });
+        changeDate(els, state, clampDate(year, state.selectedDate.getMonth(), state.selectedDate.getDate()));
+    });
 
-  els.randomButton.addEventListener("click", () => {
-    const keys = [...state.messages.keys()];
-    if (!keys.length) {
-      showToast(els, "No messages available yet.");
-      return;
-    }
+    els.randomButton.addEventListener("click", () => {
+        const keys = [...state.messages.keys()];
+        if (!keys.length) {
+            showToast(els, "No messages available yet.");
+            return;
+        }
 
-    const key = keys[Math.floor(Math.random() * keys.length)];
-    const [year, month, day] = key.split("-").map(Number);
-    changeDate(els, state, new Date(year, month - 1, day));
-  });
+        const key = keys[Math.floor(Math.random() * keys.length)];
+        const [year, month, day] = key.split("-").map(Number);
+        changeDate(els, state, new Date(year, month - 1, day));
+    });
 
-  els.favoriteButton.addEventListener("click", () => {
-    const key = toDateKey(state.selectedDate);
+    els.favoriteButton.addEventListener("click", () => {
+        const key = toDateKey(state.selectedDate);
 
-    if (state.favorites.has(key)) {
-      state.favorites.delete(key);
-      showToast(els, "Removed from favorites.");
-    } else {
-      state.favorites.add(key);
-      showToast(els, "Added to favorites.");
-    }
+        if (state.favorites.has(key)) {
+            state.favorites.delete(key);
+            showToast(els, "Removed from favorites.");
+        } else {
+            state.favorites.add(key);
+            showToast(els, "Added to favorites.");
+        }
 
-    saveFavorites(state.favorites);
-    render(els, state);
-  });
+        saveFavorites(state.favorites);
+        render(els, state);
+    });
 
-  els.copyButton.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(getShareText(state));
-      showToast(els, "Wisdom copied.");
-    } catch {
-      showToast(els, "Copy is not available on this device.");
-    }
-  });
+    els.copyButton.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(getShareText(state));
+            showToast(els, "Wisdom copied.");
+        } catch {
+            showToast(els, "Copy is not available on this device.");
+        }
+    });
 
-  els.shareButton.addEventListener("click", async () => {
-    const text = getShareText(state);
+    els.shareButton.addEventListener("click", async () => {
+        const text = getShareText(state);
 
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: "Anant Ki Aur", text });
-      } else {
-        await navigator.clipboard.writeText(text);
-        showToast(els, "Sharing not available. Wisdom copied instead.");
-      }
-    } catch {
-      showToast(els, "Sharing was cancelled.");
-    }
-  });
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: "Anant Ki Aur",
+                    text
+                });
+            } else {
+                await navigator.clipboard.writeText(text);
+                showToast(els, "Sharing not available. Wisdom copied instead.");
+            }
+        } catch {
+            showToast(els, "Sharing was cancelled.");
+        }
+    });
 
-  els.themeToggle.addEventListener("click", () => {
-    state.isDark = !state.isDark;
-    localStorage.setItem("aka-theme", state.isDark ? "dark" : "light");
-    applyTheme(state.isDark);
-    render(els, state);
-  });
+    els.themeToggle.addEventListener("click", () => {
+        state.isDark = !state.isDark;
+        localStorage.setItem("aka-theme", state.isDark ? "dark" : "light");
+        applyTheme(state.isDark);
+        render(els, state);
+    });
 }
 
 function changeDate(els, state, date) {
-  state.selectedDate = date;
-  state.displayDate = date;
-  render(els, state, true);
+    state.selectedDate = date;
+    state.displayDate = date;
+    state.isHindiVisible = false;
+    render(els, state, true);
 }
 
 function render(els, state, animate = false) {
-  const key = toDateKey(state.selectedDate);
-  const message = state.messages.get(key) || EMPTY_MESSAGE;
+    const key = toDateKey(state.selectedDate);
+    const message = state.messages.get(key) || EMPTY_MESSAGE;
+    els.messageText.textContent = state.isLoading ? "" : message;
 
-  els.root.classList.toggle("is-loading", state.isLoading);
-  els.root.classList.toggle("is-animating", animate);
+    els.hindiToggleButton.hidden = !hasHindiMessage || state.isLoading;
+    els.hindiToggleButton.setAttribute("aria-pressed", String(state.isHindiVisible));
+    els.hindiToggleButton.classList.toggle("active", state.isHindiVisible);
+    els.hindiToggleButton.innerHTML = state.isHindiVisible ?
+        "A&nbsp;&nbsp;English" :
+        "文A&nbsp;&nbsp;हिंदी";
 
-  els.dateLine.textContent = DAY_FORMATTER.format(state.selectedDate);
-  els.messageText.textContent = state.isLoading ? "" : message;
-  applyMessageSize(els.messageText, message);
-  els.monthTitle.textContent = MONTH_FORMATTER.format(state.displayDate);
-  els.yearInput.value = state.selectedDate.getFullYear();
+    els.messageText.classList.toggle("is-hindi-message", state.isHindiVisible);
 
-  const isFavorite = state.favorites.has(key);
-  els.favoriteButton.textContent = isFavorite ? "♥" : "♡";
-  els.favoriteButton.setAttribute("aria-pressed", String(isFavorite));
-  els.favoriteButton.setAttribute("aria-label", isFavorite ? "Remove from favorites" : "Add to favorites");
-  els.themeToggle.textContent = state.isDark ? "☀" : "☾";
+    els.root.classList.toggle("is-loading", state.isLoading);
+    els.root.classList.toggle("is-animating", animate);
 
-  renderWeekdays(els);
-  renderCalendar(els, state);
+    els.dateLine.textContent = DAY_FORMATTER.format(state.selectedDate);
+    els.messageText.textContent = state.isLoading ? "" : message;
+    applyMessageSize(els.messageText, message);
+    els.monthTitle.textContent = MONTH_FORMATTER.format(state.displayDate);
+    els.yearInput.value = state.selectedDate.getFullYear();
 
-  if (animate) {
-    window.setTimeout(() => els.root.classList.remove("is-animating"), 180);
-  }
+    const isFavorite = state.favorites.has(key);
+    els.favoriteButton.textContent = isFavorite ? "♥" : "♡";
+    els.favoriteButton.setAttribute("aria-pressed", String(isFavorite));
+    els.favoriteButton.setAttribute("aria-label", isFavorite ? "Remove from favorites" : "Add to favorites");
+    els.themeToggle.textContent = state.isDark ? "☀" : "☾";
+
+    renderWeekdays(els);
+    renderCalendar(els, state);
+
+    if (animate) {
+        window.setTimeout(() => els.root.classList.remove("is-animating"), 180);
+    }
 }
+
 function applyMessageSize(messageElement, message) {
-  const length = message.trim().length;
+    const length = message.trim().length;
 
-  messageElement.classList.remove(
-    "message-short",
-    "message-medium",
-    "message-long",
-    "message-very-long"
-  );
+    messageElement.classList.remove(
+        "message-short",
+        "message-medium",
+        "message-long",
+        "message-very-long"
+    );
 
-  if (length <= 120) {
-    messageElement.classList.add("message-short");
-  } else if (length <= 220) {
-    messageElement.classList.add("message-medium");
-  } else if (length <= 340) {
-    messageElement.classList.add("message-long");
-  } else {
-    messageElement.classList.add("message-very-long");
-  }
+    if (length <= 120) {
+        messageElement.classList.add("message-short");
+    } else if (length <= 220) {
+        messageElement.classList.add("message-medium");
+    } else if (length <= 340) {
+        messageElement.classList.add("message-long");
+    } else {
+        messageElement.classList.add("message-very-long");
+    }
 }
+
 function renderWeekdays(els) {
-  if (els.weekdayRow.children.length) return;
-  els.weekdayRow.innerHTML = WEEKDAYS.map((day) => `<span>${day}</span>`).join("");
+    if (els.weekdayRow.children.length) return;
+    els.weekdayRow.innerHTML = WEEKDAYS.map((day) => `<span>${day}</span>`).join("");
 }
 
 function renderCalendar(els, state) {
-  const todayKey = toDateKey(todayDate());
-  const selectedKey = toDateKey(state.selectedDate);
-  const cells = buildMonthGrid(state.displayDate);
+    const todayKey = toDateKey(todayDate());
+    const selectedKey = toDateKey(state.selectedDate);
+    const cells = buildMonthGrid(state.displayDate);
 
-  els.calendarGrid.innerHTML = cells
-    .map((date) => {
-      if (!date) return `<span class="calendar-empty" aria-hidden="true"></span>`;
+    els.calendarGrid.innerHTML = cells
+        .map((date) => {
+            if (!date) return `<span class="calendar-empty" aria-hidden="true"></span>`;
 
-      const key = toDateKey(date);
-      const hasMessage = state.messages.has(key);
-      const isSelected = key === selectedKey;
-      const isToday = key === todayKey;
-      const isFavorite = state.favorites.has(key);
+            const key = toDateKey(date);
+            const hasMessage = Boolean(state.messages.get(key)?.message);
+            const isSelected = key === selectedKey;
+            const isToday = key === todayKey;
+            const isFavorite = state.favorites.has(key);
 
-      return `
+            return `
         <button
           class="day-button ${isSelected ? "selected" : ""} ${isToday ? "today" : ""} ${hasMessage ? "has-message" : ""} ${isFavorite ? "favorite" : ""}"
           type="button"
@@ -281,43 +317,54 @@ function renderCalendar(els, state) {
           <span>${date.getDate()}</span>
         </button>
       `;
-    })
-    .join("");
+        })
+        .join("");
 
-  els.calendarGrid.querySelectorAll("[data-date]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const [year, month, day] = button.dataset.date.split("-").map(Number);
-      changeDate(els, state, new Date(year, month - 1, day));
+    els.calendarGrid.querySelectorAll("[data-date]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const [year, month, day] = button.dataset.date.split("-").map(Number);
+            changeDate(els, state, new Date(year, month - 1, day));
+        });
     });
-  });
 }
 
 function getShareText(state) {
-  const key = toDateKey(state.selectedDate);
-  const message = state.messages.get(key) || EMPTY_MESSAGE;
-  return `${DAY_FORMATTER.format(state.selectedDate)}\n\n${message}\n\nॐ तत् सत्\nAnant Ki Aur`;
+    const key = toDateKey(state.selectedDate);
+    const entry = state.messages.get(key);
+
+    let message = EMPTY_MESSAGE;
+
+    if (entry?.message) {
+        message =
+            state.isHindiVisible && entry.hindiMessage ?
+            entry.hindiMessage :
+            entry.message;
+    }
+
+    return `${DAY_FORMATTER.format(state.selectedDate)}\n\n${message}\n\nॐ तत् सत्\nअनन्त की ओर`;
 }
 
 function loadFavorites() {
-  try {
-    return new Set(JSON.parse(localStorage.getItem("aka-favorites") || "[]"));
-  } catch {
-    return new Set();
-  }
+    try {
+        return new Set(JSON.parse(localStorage.getItem("aka-favorites") || "[]"));
+    } catch {
+        return new Set();
+    }
 }
 
 function saveFavorites(favorites) {
-  localStorage.setItem("aka-favorites", JSON.stringify([...favorites]));
+    localStorage.setItem("aka-favorites", JSON.stringify([...favorites]));
 }
 
 function applyTheme(isDark) {
-  document.documentElement.dataset.theme = isDark ? "dark" : "light";
+    document.documentElement.dataset.theme = isDark ? "dark" : "light";
 }
 
 let toastTimer;
+
 function showToast(els, message) {
-  window.clearTimeout(toastTimer);
-  els.toast.textContent = message;
-  els.toast.classList.add("visible");
-  toastTimer = window.setTimeout(() => els.toast.classList.remove("visible"), 2200);
+    window.clearTimeout(toastTimer);
+    els.toast.textContent = message;
+    els.toast.classList.add("visible");
+    toastTimer = window.setTimeout(() => els.toast.classList.remove("visible"), 2200);
 }
